@@ -5,7 +5,7 @@ Vendored Dependencies
 
 * [ruby-macho](https://github.com/Homebrew/ruby-macho), version 0.2.2-39-ge2fbedc9.
 
-* [method_source](https://github.com/banister/method_source), version 0.8.2
+* [method_source](https://github.com/banister/method_source), version 0.8.2.
 
 ## Licenses:
 
