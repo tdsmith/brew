@@ -6,6 +6,7 @@ require "formula_cellar_checks"
 require "official_taps"
 require "cmd/search"
 require "date"
+require "vendor/method_source/method_source"
 
 module Homebrew
   def audit
@@ -922,6 +923,16 @@ class FormulaAuditor
     end
   end
 
+  def audit_spec_references
+    unique_methods = formula.class.instance_methods.to_set - Formula.instance_methods.to_set
+    (unique_methods + [:install, :post_install]).each do |method|
+      source = formula.class.instance_method(method).source
+      if source =~ /build\.(head\?|stable\?|devel\?)/
+        problem %(Replace "#{$&}" with "#{$1}" in #{method} method)
+      end
+    end
+  end
+
   def audit_conditional_dep(dep, condition, line)
     quoted_dep = quote_dep(dep)
     dep = Regexp.escape(dep.to_s)
@@ -962,6 +973,7 @@ class FormulaAuditor
     audit_installed
     audit_prefix_has_contents
     audit_reverse_migration
+    audit_spec_references
   end
 
   private
