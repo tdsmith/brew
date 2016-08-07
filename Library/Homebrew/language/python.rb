@@ -171,10 +171,10 @@ module Language
         def create
           return if (@venv_root/"bin/python").exist?
 
+          xy = Language::Python.major_minor_version(@python)
           @formula.resource("homebrew-virtualenv").stage do |stage|
             old_pythonpath = ENV.delete "PYTHONPATH"
             begin
-              xy = Language::Python.major_minor_version(@python)
               staging = Pathname.new(stage.staging.tmpdir)
               ENV.prepend_create_path "PYTHONPATH", staging/"target/lib/python#{xy}/site-packages"
               @formula.system @python, *Language::Python.setup_install_args(staging/"target")
@@ -194,6 +194,13 @@ module Language
               f.make_symlink new_target
             end
           end
+
+          # Allow packages to use gnureadline lazily; without this hack,
+          # gnureadline will fail to override the system readline module
+          venv_site_packages = @venv_root/"lib/python#{xy}/site-packages"
+          (venv_site_packages/"homebrew-gnureadline-hack.pth").write <<-EOS.undent
+            import sys; sys.path.insert(0, "#{venv_site_packages}/readline.py")
+          EOS
         end
 
         # Installs packages represented by `targets` into the virtualenv.
