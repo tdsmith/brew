@@ -199,7 +199,7 @@ module Language
           # gnureadline will fail to override the system readline module
           venv_site_packages = @venv_root/"lib/python#{xy}/site-packages"
           (venv_site_packages/"homebrew-gnureadline-hack.pth").write <<-EOS.undent
-            import sys; sys.path.insert(0, "#{venv_site_packages}/readline.py")
+            import sys; import gnureadline; sys.modules["readline"] = gnureadline
           EOS
         end
 
