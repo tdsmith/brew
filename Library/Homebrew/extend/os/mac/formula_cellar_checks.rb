@@ -59,6 +59,33 @@ module FormulaCellarChecks
     EOS
   end
 
+  def check_python_virtualenv
+    framework = formula.libexec/".Python"
+    return unless framework.symlink?
+    return unless framework.realpath.to_s.start_with?("/System")
+    <<-EOS.undent
+      virtualenv created against system Python
+      This formula created a virtualenv using system Python.
+      Please add `depends_on :python` to the formula.
+    EOS
+  end
+
+  def check_python_shebangs
+    return unless formula.bin.directory?
+    system_python_shebangs = formula.bin.children.select do |bin|
+      (bin.open { |f| f.read(32) }).start_with?("#!/usr/bin/python")
+    end
+    return if system_python_shebangs.empty?
+
+    <<-EOS.undent
+      python scripts run with system python
+      These python scripts have shebangs that invoke system Python.
+      They should run Homebrew's python instead. Adding `depends_on :python`
+      to the formula may help.
+        #{system_python_shebangs * "\n        "}
+    EOS
+  end
+
   def check_linkage
     return unless formula.prefix.directory?
     keg = Keg.new(formula.prefix)
@@ -77,6 +104,8 @@ module FormulaCellarChecks
     audit_check_output(check_shadowed_headers)
     audit_check_output(check_openssl_links)
     audit_check_output(check_python_framework_links(formula.lib))
+    audit_check_output(check_python_virtualenv)
+    audit_check_output(check_python_shebangs)
     check_linkage
   end
 end
