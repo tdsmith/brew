@@ -60,6 +60,7 @@ module FormulaCellarChecks
   end
 
   def check_python_virtualenv
+    return if default_python_is_system_python?
     framework = formula.libexec/".Python"
     return unless framework.symlink?
     return unless framework.realpath.to_s.start_with?("/System")
@@ -72,6 +73,7 @@ module FormulaCellarChecks
 
   def check_python_shebangs
     return unless formula.bin.directory?
+    return if default_python_is_system_python?
     system_python_shebangs = formula.bin.children.select do |bin|
       (bin.open { |f| f.read(32) }).start_with?("#!/usr/bin/python")
     end
@@ -107,5 +109,25 @@ module FormulaCellarChecks
     audit_check_output(check_python_virtualenv)
     audit_check_output(check_python_shebangs)
     check_linkage
+  end
+
+  def default_python_is_system_python?
+    sanitized_path = ENV["PATH"]
+    begin
+      # Run `python` in the user's environment to get the real answer because
+      # the python we find in the user's PATH might be a pyenv shim
+      ENV["PATH"] = ENV["HOMEBREW_USER_PATH"]
+      which_python = which("python")
+      python_exec, _ = Open3.capture2(which_python, "-c", "import sys; print(sys.executable)")
+      python_exec = Pathname.new(python_exec.strip).realpath
+    rescue => e
+      opoo "Inconsistent Python environment: #{e}"
+      python_exec = Pathname.new("")
+    ensure
+      ENV["PATH"] = sanitized_path
+    end
+
+    return nil unless python_exec.exist?
+    return python_exec.to_s.start_with?("/usr/bin/python")
   end
 end
