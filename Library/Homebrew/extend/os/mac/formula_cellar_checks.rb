@@ -60,7 +60,7 @@ module FormulaCellarChecks
   end
 
   def check_python_virtualenv
-    return if default_python_is_system_python?
+    return if formula_requires_python?(formula) && default_python_is_system_python?
     framework = formula.libexec/".Python"
     return unless framework.symlink?
     return unless framework.realpath.to_s.start_with?("/System")
@@ -73,7 +73,7 @@ module FormulaCellarChecks
 
   def check_python_shebangs
     return unless formula.bin.directory?
-    return if default_python_is_system_python?
+    return if formula_requires_python?(formula) && default_python_is_system_python?
     system_python_shebangs = formula.bin.children.select do |bin|
       (bin.open { |f| f.read(32) }).start_with?("#!/usr/bin/python")
     end
@@ -129,5 +129,9 @@ module FormulaCellarChecks
 
     return nil unless python_exec.exist?
     python_exec.to_s.start_with?("/usr/bin/python")
+  end
+
+  def formula_requires_python?(formula)
+    formula.requirements.any { |r| r.name == "python" }
   end
 end
