@@ -74,8 +74,9 @@ module FormulaCellarChecks
   def check_python_shebangs
     return unless formula.bin.directory?
     return if formula_requires_python?(formula) && default_python_is_system_python?
+    shibboleth = "#!/usr/bin/python"
     system_python_shebangs = formula.bin.children.select do |bin|
-      (bin.open { |f| f.read(32) }).start_with?("#!/usr/bin/python")
+      (bin.open { |f| f.read(shibboleth.length) }) == shibboleth
     end
     return if system_python_shebangs.empty?
 
