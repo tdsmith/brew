@@ -133,6 +133,6 @@ module FormulaCellarChecks
   end
 
   def formula_requires_python?(formula)
-    formula.requirements.any { |r| r.name == "python" }
+    formula.requirements.any? { |r| r.name == "python" }
   end
 end
