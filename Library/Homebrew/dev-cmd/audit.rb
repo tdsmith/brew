@@ -49,7 +49,6 @@ module Homebrew
     strict = new_formula || ARGV.include?("--strict")
     online = new_formula || ARGV.include?("--online")
 
-    ENV["HOMEBREW_USER_PATH"] = ENV["PATH"]
     ENV.activate_extensions!
     ENV.setup_build_environment
 

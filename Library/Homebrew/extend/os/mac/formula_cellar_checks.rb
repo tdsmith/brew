@@ -117,7 +117,7 @@ module FormulaCellarChecks
     begin
       # Run `python` in the user's environment to get the real answer because
       # the python we find in the user's PATH might be a pyenv shim
-      ENV["PATH"] = ENV["HOMEBREW_USER_PATH"]
+      ENV["PATH"] = ORIGINAL_PATHS.join(File::PATH_SEPARATOR)
       which_python = which("python")
       python_exec, = Open3.capture2(which_python, "-c", "import sys; print(sys.executable)")
       python_exec = Pathname.new(python_exec.strip).realpath
