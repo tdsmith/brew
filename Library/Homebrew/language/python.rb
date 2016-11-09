@@ -102,6 +102,10 @@ module Language
     module Virtualenv
       def self.included(base)
         base.class_eval do
+          # This is a no-op option intended to force a source build in a way
+          # that `brew upgrade` will memorize.
+          option "with-custom-python", "Use the python in PATH instead of Homebrew's python distribution"
+
           resource "homebrew-virtualenv" do
             url PYTHON_VIRTUALENV_URL
             sha256 PYTHON_VIRTUALENV_SHA256
