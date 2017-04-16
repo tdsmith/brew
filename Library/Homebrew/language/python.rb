@@ -1,3 +1,4 @@
+require "open3"
 require "utils"
 require "language/python_virtualenv_constants"
 
@@ -42,7 +43,10 @@ module Language
     end
 
     def self.user_site_packages(python)
-      Pathname.new(`#{python} -c "import site; print(site.getusersitepackages())"`.chomp)
+      cmd = [python, "-c", "import site; print(site.getusersitepackages())"]
+      stdout, _stderr, status = Open3.capture3(*cmd)
+      return unless status.success?
+      Pathname.new(stdout.chomp)
     end
 
     def self.in_sys_path?(python, path)
