@@ -327,14 +327,6 @@ class Keg
     !Dir["#{path}/*.plist"].empty?
   end
 
-  def python_site_packages_installed?
-    path.join("lib", "python2.7", "site-packages").directory?
-  end
-
-  def python_pth_files_installed?
-    !Dir["#{path}/lib/python2.7/site-packages/*.pth"].empty?
-  end
-
   def apps
     app_prefix = optlinked? ? opt_record : path
     Pathname.glob("#{app_prefix}/{,libexec/}*.app")
