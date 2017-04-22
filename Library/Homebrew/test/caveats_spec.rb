@@ -45,22 +45,22 @@ describe Caveats do
         allow(Language::Python).to receive(:reads_brewed_pth_files?).and_return(true)
       end
       context "site-packages is empty" do
-        it("should return nil") { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
       context "a 2.7 site-packages exists" do
         before { packages27.mkpath }
-        it("should return nil") { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       context "formula is keg-only" do
         before { allow(f).to receive(:keg_only?).and_return(true) }
         context "site-packages is empty" do
-          it("should return nil") { is_expected.to be_nil }
+          it { is_expected.to be_nil }
         end
         context "a 2.7 site-packages exists" do
           before { packages27.mkpath }
-          it("should complain") { is_expected.not_to be_nil }
-          it("should mention keg-only") { is_expected.to include("keg-only") }
+          it { is_expected.not_to be_nil }
+          it { is_expected.to include("keg-only") }
         end
       end
     end
@@ -72,7 +72,7 @@ describe Caveats do
         allow(Language::Python).to receive(:user_site_packages).and_return(Pathname.new("user_site_packages"))
       end
       context "site-packages is empty" do
-        it("should return nil") { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
       context "a 2.7 site-packages exists" do
         before { packages27.mkpath }
@@ -98,11 +98,11 @@ describe Caveats do
         allow(Language::Python).to receive(:user_site_packages).and_return(Pathname.new("user_site_packages"))
       end
       context "site-packages is empty" do
-        it("should return nil") { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
       context "an empty 2.7 site-packages exists" do
         before { packages27.mkpath }
-        it("should return nil") { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
       context "a 2.7 site-packages exists with a .pth file" do
         before do

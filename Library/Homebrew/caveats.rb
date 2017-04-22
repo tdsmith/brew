@@ -118,7 +118,7 @@ class Caveats
       next if Language::Python.reads_brewed_pth_files?(python)
       homebrew_site_packages = Language::Python.homebrew_site_packages(python_version)
       user_site_packages = Language::Python.user_site_packages(python)
-      next unless user_site_packages # may be nil, in which case give up
+      next unless user_site_packages
       pth_file = user_site_packages/"homebrew.pth"
       <<-EOS.undent.gsub(/^/, "  ")
         mkdir -p #{user_site_packages}
@@ -126,22 +126,23 @@ class Caveats
       EOS
     end.compact.join("\n")
 
-    out = []
+    output = []
 
     if f.keg_only?
       commands = formula_packages.map do |path|
         python, python_version = python_from_path[path]
         homebrew_site_packages = Language::Python.homebrew_site_packages(python_version)
-        unless Language::Python.in_sys_path?(python, path)
-          "  echo 'import site; site.addsitedir(\"#{path}\")' >> #{homebrew_site_packages/f.name}.pth"
-        end
+        next if Language::Python.in_sys_path?(python, path)
+        "  echo 'import site; site.addsitedir(\"#{path}\")' >> #{homebrew_site_packages/f.name}.pth"
       end.compact
 
       unless commands.empty?
-        out << "If you need Python to find bindings for this keg-only formula, run:"
-        out += commands
-        out << homebrew_site_package_instructions unless homebrew_site_package_instructions.empty?
-        return out.join("\n")
+        output << <<-EOS.undent.rstrip
+          If you need Python to find bindings for this keg-only formula, run:
+        EOS
+        output += commands
+        output << homebrew_site_package_instructions unless homebrew_site_package_instructions.empty?
+        return output.join("\n")
       end
     end
 
@@ -154,7 +155,7 @@ class Caveats
     end
 
     if missing_from_sys_path
-      out << <<-EOS.undent.rstrip
+      output << <<-EOS.undent.rstrip
         Python modules have been installed and Homebrew's site-packages is not
         in your Python sys.path, so you will not be able to import the modules
         this formula installed. If you plan to develop with these modules,
@@ -163,7 +164,7 @@ class Caveats
     else
       pth_files = formula_packages.map { |p| Dir[p + "/*.pth"] }.flatten
       return if pth_files.empty?
-      out << <<-EOS.undent.rstrip
+      output << <<-EOS.undent.rstrip
         This formula installed .pth files to Homebrew's site-packages and your
         Python isn't configured to process them, so you will not be able to
         import the modules this formula installed. If you plan to develop
@@ -171,8 +172,8 @@ class Caveats
       EOS
     end
 
-    out << homebrew_site_package_instructions
-    out.join("\n")
+    output << homebrew_site_package_instructions
+    output.join("\n")
   end
 
   def elisp_caveats
